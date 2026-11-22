@@ -25,6 +25,24 @@ func decodeBencode(bencode string) (any, error) {
 			return "", err
 		}
 		return bencode[firstColonIndex+1 : firstColonIndex+1+length], nil
+	} else if rune(bencode[0]) == 'i' {
+		// 整数
+		// - i42e -> 42
+		var integerEnd int = 0
+		for i, c := range bencode {
+			if c == 'e' {
+				integerEnd = i
+				break
+			}
+		}
+		if integerEnd == 0 {
+			return 0, fmt.Errorf("Parse integer failed: syntax error, expected character 'e'")
+		}
+		num, err := strconv.Atoi(bencode[1:integerEnd])
+		if err != nil {
+			return 0, fmt.Errorf("Parse integer failed: %v", err)
+		}
+		return num, nil
 	} else {
 		return "", fmt.Errorf("Only strings are supported at the moment")
 	}
