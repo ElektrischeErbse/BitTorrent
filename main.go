@@ -112,7 +112,8 @@ func decodeBencode(bencode string) (any, error) {
 
 func main() {
 	command := os.Args[1]
-	if command == "decode" {
+	switch command {
+	case "decode":
 		bencodeValue := os.Args[2]
 		result, err := decodeBencode(bencodeValue)
 		if err != nil {
@@ -121,7 +122,14 @@ func main() {
 		}
 		jsonOutput, _ := json.Marshal(result)
 		fmt.Println(string(jsonOutput))
-	} else {
+	case "info":
+		torrentFile := os.Args[2]
+		t, err := ParseTorrentFile(torrentFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Parse torrent file: %s failed, %v\n", torrentFile, err)
+		}
+		fmt.Printf("Tracker: %s\nLength: %d\n", t.Tracker, t.Length)
+	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
