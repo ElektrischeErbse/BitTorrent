@@ -1,14 +1,17 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"sort"
 )
 
 type Torrent struct {
-	Tracker string
-	Length  int
+	Tracker  string
+	Length   int
+	InfoHash string
 }
 
 func ParseTorrentFile(torrentFile string) (Torrent, error) {
@@ -32,6 +35,16 @@ func ParseTorrentFile(torrentFile string) (Torrent, error) {
 		fmt.Fprintln(os.Stderr, "Failed to get info.length")
 	}
 	torrent.Length = length
+	info, ok := getValueByKey[map[string]any](result, "info")
+	if !ok {
+		fmt.Fprintln(os.Stderr, "Failed to get info")
+	}
+	info_content, err := BuildBencode(info)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "BuildBencode error: %v\n", err)
+	}
+	hash := sha1.Sum([]byte(info_content))
+	torrent.InfoHash = hex.EncodeToString(hash[:])
 	return torrent, nil
 }
 

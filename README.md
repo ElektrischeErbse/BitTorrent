@@ -33,3 +33,21 @@ comment: 备注
 - files：一个列表，里面包含多个字典，每个字典描述一个文件：
     - length：该文件的大小
     - path：列表结构，包含子目录名和最终的文件名（例如 l4:test8:test.txte）
+
+### info hash
+info hash 是 torrent 文件中 info 字典的 SHA-1 哈希值，用于唯一标识一个 torrent 文件。
+它在 BitTorrent 协议中起着关键作用，尤其是在 peer 之间交换数据时，用于验证文件的完整性和一致性。
+```go
+info, ok := getValueByKey[map[string]any](result, "info")
+if !ok {
+    fmt.Fprintln(os.Stderr, "Failed to get info")
+}
+// 构建 bencode 编码的 info 字典
+info_content, err := BuildBencode(info)
+if err != nil {
+    fmt.Fprintf(os.Stderr, "BuildBencode error: %v\n", err)
+}
+// 计算 info hash
+hash := sha1.Sum([]byte(info_content))
+torrent.InfoHash = hex.EncodeToString(hash[:])
+```

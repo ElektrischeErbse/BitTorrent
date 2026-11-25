@@ -129,6 +129,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Parse torrent file: %s failed, %v\n", torrentFile, err)
 		}
 		fmt.Printf("Tracker: %s\nLength: %d\n", t.Tracker, t.Length)
+		fmt.Printf("Info Hash: %s\n", t.InfoHash)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
