@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -130,6 +131,8 @@ func main() {
 		}
 		fmt.Printf("Tracker: %s\nLength: %d\n", t.Tracker, t.Length)
 		fmt.Printf("Info Hash: %s\n", t.InfoHash)
+		fmt.Printf("Piece Length: %d\n", t.PieceLength)
+		fmt.Printf("Piece Hashes:\n%s\n", strings.Join(t.PieceHashes, "\n"))
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)

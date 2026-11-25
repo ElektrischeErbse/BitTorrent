@@ -9,9 +9,11 @@ import (
 )
 
 type Torrent struct {
-	Tracker  string
-	Length   int
-	InfoHash string
+	Tracker     string
+	Length      int
+	InfoHash    string
+	PieceLength int
+	PieceHashes []string
 }
 
 func ParseTorrentFile(torrentFile string) (Torrent, error) {
@@ -32,19 +34,33 @@ func ParseTorrentFile(torrentFile string) (Torrent, error) {
 	torrent.Tracker = tracker
 	length, ok := getValueByKey[int](result, "info", "length")
 	if !ok {
-		fmt.Fprintln(os.Stderr, "Failed to get info.length")
+		fmt.Fprintln(os.Stderr, "Failed to get info[length]")
 	}
 	torrent.Length = length
 	info, ok := getValueByKey[map[string]any](result, "info")
 	if !ok {
 		fmt.Fprintln(os.Stderr, "Failed to get info")
 	}
-	info_content, err := BuildBencode(info)
+	infoContent, err := BuildBencode(info)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "BuildBencode error: %v\n", err)
 	}
-	hash := sha1.Sum([]byte(info_content))
+	hash := sha1.Sum([]byte(infoContent))
 	torrent.InfoHash = hex.EncodeToString(hash[:])
+	pieceLen, ok := getValueByKey[int](result, "info", "piece length")
+	if !ok {
+		fmt.Fprintln(os.Stderr, "Failed to get info[piece length]")
+	}
+	torrent.PieceLength = pieceLen
+	// 所有数据块的 SHA-1 哈希值拼接而成的二进制串
+	pieceHashes, ok := getValueByKey[string](result, "info", "pieces")
+	if !ok {
+		fmt.Fprintln(os.Stderr, "Failed to get info[pieces]")
+	}
+	for i := 0; i < len(pieceHashes); i += 20 {
+		hexHash := hex.EncodeToString([]byte(pieceHashes[i : i+20]))
+		torrent.PieceHashes = append(torrent.PieceHashes, hexHash)
+	}
 	return torrent, nil
 }
 
