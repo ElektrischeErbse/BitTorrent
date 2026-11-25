@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 )
 
 type Torrent struct {
@@ -17,7 +18,7 @@ func ParseTorrentFile(torrentFile string) (Torrent, error) {
 		return torrent, err
 	}
 	content := string(bs)
-	result, err := decodeBencode(content)
+	result, err := DecodeBencode(content)
 	if err != nil {
 		return torrent, err
 	}
@@ -50,4 +51,64 @@ func getValueByKey[T any](root any, keys ...string) (T, bool) {
 	}
 	result, ok := current.(T)
 	return result, ok
+}
+
+func BuildBencode(data any) (string, error) {
+	switch v := data.(type) {
+	case string:
+		return encodeString(v)
+	case int:
+		return encodeInteger(v)
+	case []any:
+		return encodeList(v)
+	case map[string]any:
+		return encodeDict(v)
+	default:
+		return "", fmt.Errorf("Error: unsupported type!")
+	}
+}
+
+func encodeString(data string) (string, error) {
+	return fmt.Sprintf("%d:%s", len(data), data), nil
+}
+
+func encodeInteger(data int) (string, error) {
+	return fmt.Sprintf("i%de", data), nil
+}
+
+func encodeList(data []any) (string, error) {
+	res := "l"
+	for _, item := range data {
+		s, err := BuildBencode(item)
+		if err != nil {
+			return res, err
+		}
+		res += s
+	}
+	res += "e"
+	return res, nil
+}
+
+func encodeDict(data map[string]any) (string, error) {
+	// 键按字典序升序排列
+	var keys []string
+	for k := range data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	res := "d"
+	for _, k := range keys {
+		s, err := encodeString(k)
+		if err != nil {
+			return res, err
+		}
+		res += s
+		s, err = BuildBencode(data[k])
+		if err != nil {
+			return res, err
+		}
+		res += s
+	}
+	res += "e"
+	return res, nil
 }

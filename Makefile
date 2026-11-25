@@ -3,3 +3,6 @@ build:
 
 clean:
 	rm -f main
+
+test:
+	go test -v ./...

@@ -63,7 +63,7 @@ func decodeList(bencode string) ([]any, error) {
 	var items []any
 	readIndex++
 	for rune(bencode[readIndex]) != 'e' {
-		item, err := decodeBencode(bencode)
+		item, err := DecodeBencode(bencode)
 		if err != nil {
 			return items, fmt.Errorf("Parse list failed: %v", err)
 		}
@@ -87,7 +87,7 @@ func decodeDict(bencode string) (map[string]any, error) {
 		if err != nil {
 			return dict, fmt.Errorf("Parse dict failed: %v", err)
 		}
-		value, err := decodeBencode(bencode)
+		value, err := DecodeBencode(bencode)
 		if err != nil {
 			return dict, fmt.Errorf("Parse dict failed: %v", err)
 		}
@@ -96,7 +96,7 @@ func decodeDict(bencode string) (map[string]any, error) {
 	return dict, nil
 }
 
-func decodeBencode(bencode string) (any, error) {
+func DecodeBencode(bencode string) (any, error) {
 	if unicode.IsDigit(rune(bencode[readIndex])) {
 		return decodeString(bencode)
 	} else if rune(bencode[readIndex]) == 'i' {
@@ -115,7 +115,7 @@ func main() {
 	switch command {
 	case "decode":
 		bencodeValue := os.Args[2]
-		result, err := decodeBencode(bencodeValue)
+		result, err := DecodeBencode(bencodeValue)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
