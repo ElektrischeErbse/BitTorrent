@@ -137,6 +137,9 @@ func main() {
 		for i := 0; i < len(t.PieceHashes); i += 20 {
 			fmt.Println(hex.EncodeToString(t.PieceHashes[i : i+20]))
 		}
+	case "tracker":
+		tracker := NewTracker()
+		tracker.StartTrackerService()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)

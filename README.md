@@ -73,3 +73,12 @@ Tracker 请求包含以下参数，其中所有二进制数据（特别是 info_
 - ip 可选的 IP 地址，通常由 Tracker 服务器自动获取
 - numwant 请求的 peer 数量，默认值为 50
 - no_peer_id 是否请求 peer_id（1 表示不请求，0 表示请求）
+
+### BitTorrent Tracker 的响应
+Tracker 响应是一个 bencode 编码的字典，包含以下字段：
+1. 必填字段
+- interval 客户端应等待的秒数，之后再次向 Tracker 发送请求
+- peers peer 列表，格式取决于 compact 参数的值：
+    - compact=1：peers 是一个二进制字符串，每 6 个字节表示一个 peer（前 4 字节为 IP 地址，后 2 字节为端口号）
+    - compact=0：peers 是一个列表，每个元素是一个字典，包含 peer_id、ip 和 port 字段
+
