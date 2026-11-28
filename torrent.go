@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha1"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"sort"
@@ -11,9 +10,9 @@ import (
 type Torrent struct {
 	Tracker     string
 	Length      int
-	InfoHash    string
+	InfoHash    [20]byte
 	PieceLength int
-	PieceHashes []string
+	PieceHashes []byte
 }
 
 func ParseTorrentFile(torrentFile string) (Torrent, error) {
@@ -46,7 +45,7 @@ func ParseTorrentFile(torrentFile string) (Torrent, error) {
 		fmt.Fprintf(os.Stderr, "BuildBencode error: %v\n", err)
 	}
 	hash := sha1.Sum([]byte(infoContent))
-	torrent.InfoHash = hex.EncodeToString(hash[:])
+	torrent.InfoHash = hash
 	pieceLen, ok := getValueByKey[int](result, "info", "piece length")
 	if !ok {
 		fmt.Fprintln(os.Stderr, "Failed to get info[piece length]")
@@ -57,10 +56,7 @@ func ParseTorrentFile(torrentFile string) (Torrent, error) {
 	if !ok {
 		fmt.Fprintln(os.Stderr, "Failed to get info[pieces]")
 	}
-	for i := 0; i < len(pieceHashes); i += 20 {
-		hexHash := hex.EncodeToString([]byte(pieceHashes[i : i+20]))
-		torrent.PieceHashes = append(torrent.PieceHashes, hexHash)
-	}
+	torrent.PieceHashes = []byte(pieceHashes)
 	return torrent, nil
 }
 

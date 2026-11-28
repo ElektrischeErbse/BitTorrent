@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"unicode"
 )
 
@@ -128,11 +128,15 @@ func main() {
 		t, err := ParseTorrentFile(torrentFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Parse torrent file: %s failed, %v\n", torrentFile, err)
+			os.Exit(1)
 		}
 		fmt.Printf("Tracker: %s\nLength: %d\n", t.Tracker, t.Length)
-		fmt.Printf("Info Hash: %s\n", t.InfoHash)
+		fmt.Printf("Info Hash: %s\n", hex.EncodeToString(t.InfoHash[:]))
 		fmt.Printf("Piece Length: %d\n", t.PieceLength)
-		fmt.Printf("Piece Hashes:\n%s\n", strings.Join(t.PieceHashes, "\n"))
+		fmt.Printf("Piece Hashes:\n")
+		for i := 0; i < len(t.PieceHashes); i += 20 {
+			fmt.Println(hex.EncodeToString(t.PieceHashes[i : i+20]))
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)

@@ -51,3 +51,25 @@ if err != nil {
 hash := sha1.Sum([]byte(info_content))
 torrent.InfoHash = hex.EncodeToString(hash[:])
 ```
+
+### BitTorrent Tracker 的 GET 请求
+请求的 Base URL 来源于 .torrent 文件中定义的 announce 字段。参数通过标准的 CGI 方式（即 ? 后跟 & 分隔的键值对）追加到 URL 后面
+```
+GET /announce?info_hash=%124Vx%9A%BC%DE%F1%23Eg%89%AB%CD%EF%124Vx%9A&peer_id=-LT3000-123456789ABC&port=6881&uploaded=0&downloaded=0&left=1048576&compact=1&event=started HTTP/1.1
+Host: tracker.example.com
+```
+Tracker 请求包含以下参数，其中所有二进制数据（特别是 info_hash 和 peer_id）必须进行严格的 URL 转义（不在 0-9, a-z, A-Z, ., -, _, ~ 集合中的字节必须以 %nn 的十六进制形式编码）
+1. 必填字段
+- info_hash 20 字节的 SHA-1 哈希值，即 .torrent 文件中 info 字典的哈希值
+- peer_id 20 字节的唯一标识符，用于标识客户端
+- port 客户端监听的端口号
+- uploaded 已上传的字节数
+- downloaded 已下载的字节数
+- left 剩余需要下载的字节数
+
+2. 可选字段
+- compact 是否请求紧凑的 peer 列表（1 表示是，0 表示否）
+- event 事件类型（started、stopped、completed 等）
+- ip 可选的 IP 地址，通常由 Tracker 服务器自动获取
+- numwant 请求的 peer 数量，默认值为 50
+- no_peer_id 是否请求 peer_id（1 表示不请求，0 表示请求）
